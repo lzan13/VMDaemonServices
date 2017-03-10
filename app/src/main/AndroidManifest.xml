@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.vmloft.develop.daemon">
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <application
+        android:name=".VMApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name="com.vmloft.develop.daemon.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!--一像素守护 Activity-->
+        <activity
+            android:name=".VMDaemonActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|navigation|keyboard"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:finishOnTaskLaunch="false"
+            android:launchMode="singleInstance"
+            android:process=":daemon"
+            android:theme="@style/AppTheme.Daemon"/>
+
+        <!--接收守护进程发送广播，用来唤醒核心进程的广播接收器-->
+        <receiver
+            android:name="com.vmloft.develop.daemon.receiver.VMWakeReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.vmloft.develop.daemon.wake"/>
+                <action android:name="android.intent.action.SCREEN_OFF"/>
+                <action android:name="android.intent.action.USER_PRESENT"/>
+            </intent-filter>
+        </receiver>
+
+        <!--普通前台进程-->
+        <service
+            android:name="com.vmloft.develop.daemon.services.VMForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":foreground"/>
+
+        <!--守护进程-->
+        <service
+            android:name="com.vmloft.develop.daemon.services.VMDaemonService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":daemon"/>
+        <service
+            android:name="com.vmloft.develop.daemon.services.VMDaemonService$DaemonInnerService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":daemon"/>
+
+        <!--普通后台进程-->
+        <service
+            android:name="com.vmloft.develop.daemon.services.VMBackgroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":background"/>
+
+        <!--核心进程-->
+        <service
+            android:name="com.vmloft.develop.daemon.services.VMCoreService"
+            android:enabled="true"
+            android:exported="false"/>
+        <service
+            android:name="com.vmloft.develop.daemon.services.VMCoreService$CoreInnerService"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <!--5.x 以上使用 JobService-->
+        <service
+            android:name=".services.VMDaemonJobService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:process=":daemonjob"/>
+    </application>
+
+</manifest>
